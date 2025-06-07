@@ -1,5 +1,5 @@
 # TriggerRush
-A super basic arena FPS. Made in Roblox.<br/>Repository updates will occur when a stable release for the game occurs.
+A super basic arena FPS. Made in Roblox.<br/>Repository updates will occur when a stable version for the game releases.
 
 ## Weaponry
 Players spawn with all weapons in-game, including;
