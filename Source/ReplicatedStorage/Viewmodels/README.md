@@ -1,0 +1,1 @@
+Viewmodel scripts define playable animations for weapons, optionally defines their events (usually just playing sfx).

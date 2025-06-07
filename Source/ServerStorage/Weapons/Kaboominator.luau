@@ -1,0 +1,107 @@
+local weapon = {}
+
+weapon.ammoType = "grenades"
+weapon.slotPriority = 6
+weapon.weaponIcon = "rbxassetid://100427751475115"
+
+local idleAnim : Animation = Instance.new("Animation")
+local fireAnim : Animation = Instance.new("Animation")
+
+idleAnim.AnimationId = "rbxassetid://107717648611835"
+fireAnim.AnimationId = "rbxassetid://139507921495061"
+
+local InventoryManager = require(game.ServerStorage.Assets.Modules.InventoryManager)
+local ProjectileManager = require(game.ServerStorage.Assets.Modules.ProjectileManager)
+
+local Debris : Debris = game:GetService("Debris")
+
+local data : table<Player, table<any>> = {}
+function weapon:equip(ply : Player)
+	data[ply] = {
+		anims = {
+			idle = ply.Character.Humanoid.Animator:LoadAnimation(idleAnim),
+			fire = ply.Character.Humanoid.Animator:LoadAnimation(fireAnim)
+		},
+		timeToTick = tick(),
+	}
+	
+	local kaboominator : BasePart = script.Kaboom:Clone()
+	kaboominator.Parent = ply.Character
+	
+	local m : Motor6D = Instance.new("Motor6D")
+	m.Parent = kaboominator
+	m.Part0 = ply.Character["Right Arm"]
+	m.Part1 = kaboominator
+	m.C1 = CFrame.new(Vector3.new(0.3, -0.8, 2.2)) * CFrame.Angles(math.rad(90),0,0)
+	
+	data[ply].anims.idle:Play()
+	
+	game.ReplicatedStorage.Remotes.SummonViewmodel:FireClient(ply,"Kaboominator")
+	game.ReplicatedStorage.Remotes.PlayViewmodelAnimation:FireClient(ply,"Equip")
+	game.ReplicatedStorage.Remotes.PlayViewmodelAnimation:FireClient(ply,"Idle")
+	
+	local ammo = InventoryManager:getPlayerAmmo(ply)
+	game.ReplicatedStorage.Remotes.UpdateAmmoUI:FireClient(ply,{
+		displayAmmo = self.ammoType,
+		munitions = {
+			bullets = ammo.bullets,
+			shells = ammo.shells,
+			grenades = ammo.grenades,
+			rockets = ammo.rockets
+		}
+	})
+end
+
+function weapon:unequip(ply : Player)
+	if ply.Character.Kaboom:FindFirstChild("Motor6D") then
+		ply.Character.Kaboom.Motor6D:Destroy()
+	end
+	ply.Character.Kaboom:Destroy()
+	
+	for _,v in pairs(data[ply].anims) do
+		v:Stop()
+	end
+	
+	data[ply] = nil
+end
+
+function weapon:attack(ply : Player)
+	if (tick() - data[ply].timeToTick) < 0.75 then return end
+	if InventoryManager:getPlayerAmmo(ply).grenades <= 0 then return end
+	
+	InventoryManager:getInventory(ply).ammo[self.ammoType] -= 1
+	local ammo = InventoryManager:getPlayerAmmo(ply)
+	game.ReplicatedStorage.Remotes.UpdateAmmoUI:FireClient(ply,{
+		displayAmmo = self.ammoType,
+		munitions = {
+			bullets = ammo.bullets,
+			shells = ammo.shells,
+			grenades = ammo.grenades,
+			rockets = ammo.rockets
+		}
+	})
+	
+	data[ply].timeToTick = tick()
+	data[ply].anims.fire:Play()
+	
+	game.ReplicatedStorage.Remotes.PlayViewmodelAnimation:FireClient(ply,"Fire")
+	do
+		for _,v in pairs(game.Players:GetPlayers()) do
+			if v == ply then
+				continue
+			end
+			game.ReplicatedStorage.Remotes.PlaySoundAsPart:FireClient(v,ply.Character.PrimaryPart.Position,"rbxassetid://7129285090",function(sound : Sound)
+				sound.PlaybackSpeed = math.random(900,1100)/1000
+			end)
+		end
+	end
+	
+	--
+	local offset = Vector3.new(0,0,-5)
+	local spawnPos : CFrame = ply.Character.PrimaryPart.CFrame*CFrame.new(Vector3.new(0,0,-5))
+	local direction : Vector3 = (game.ReplicatedStorage.Remotes.GetMousePos:InvokeClient(ply) - (ply.Character.PrimaryPart.Position + offset)).Unit
+	
+	local grenade = ProjectileManager:createProjectile("Grenade",ply,spawnPos.Position,direction)
+end
+
+return weapon
