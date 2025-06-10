@@ -15,16 +15,48 @@ idleAnim.AnimationId = "rbxassetid://16053870251"
 attack1Anim.AnimationId = "rbxassetid://16053875720"
 attack2Anim.AnimationId = "rbxassetid://16053878517"
 
+--[[
+
+	For some reason, when players equip and unequip weapons,
+	the FPS steadily decreases, only returning to normal when
+	they die or return to the menu.
+
+	As a workaround, the server creates as many copies of the
+	weapon model as there are player slots, and assigns a copy
+	to each player character when they need the weapon.
+
+	It's not ideal, but this is the only way to prevent third-person
+	player animations and models from being removed.
+
+]]
+local modelCopies : table<unknown> = {}
+
+for i = 1,game.Players.MaxPlayers do
+	modelCopies[i] = {
+		model = script.DaggerHandle:Clone(),
+		taken = false
+	}
+end
+
 local data : table<Player, table<unknown>> = {}
 function weapon:equip(ply : Player)
-	local daggerModel : BasePart = script.DaggerHandle:Clone()
-	daggerModel.Parent = ply.Character
+	local chosenModel : MeshPart? = nil
+	for i = 1,#modelCopies do
+		if modelCopies[i].taken then continue end
+		chosenModel = modelCopies[i].model
+		modelCopies[i].taken = true
+		break
+	end
 	
-	local motor : Motor6D = Instance.new("Motor6D")
-	motor.Parent = daggerModel
-	motor.Part0 = daggerModel
-	motor.Part1 = ply.Character["Right Arm"]
-	motor.C0 = CFrame.new(Vector3.new(-0.954, -0.443, -0.947)) * CFrame.Angles(0,math.rad(180),math.rad(-90))
+	if chosenModel then
+		chosenModel.Parent = ply.Character
+		
+		local motor : Motor6D = Instance.new("Motor6D")
+		motor.Parent = chosenModel
+		motor.Part0 = chosenModel
+		motor.Part1 = ply.Character["Right Arm"]
+		motor.C0 = CFrame.new(Vector3.new(-0.954, -0.443, -0.947)) * CFrame.Angles(0,math.rad(180),math.rad(-90))
+	end
 	
 	data[ply] = {
 		anims = {
@@ -59,10 +91,21 @@ function weapon:equip(ply : Player)
 end
 
 function weapon:unequip(ply : Player)
-	if ply.Character.DaggerHandle:FindFirstChild("Motor6D") then
-		ply.Character.DaggerHandle.Motor6D:Destroy()
+	if ply.Character:FindFirstChild("DaggerHandle") then
+		local model = ply.Character.DaggerHandle
+		
+		if model:FindFirstChild("Motor6D") then
+			model.Motor6D:Destroy()
+		end
+		
+		for i = 1,#modelCopies do
+			if not modelCopies[i].taken then continue end
+			modelCopies[i].model = model
+			modelCopies[i].taken = false
+		end
+		
+		model.Parent = nil
 	end
-	ply.Character:FindFirstChild("DaggerHandle"):Destroy()
 	
 	for _,v in pairs(data[ply].anims) do
 		v:Stop()

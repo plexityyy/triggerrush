@@ -15,6 +15,14 @@ local InventoryManager = require(game.ServerStorage.Assets.Modules.InventoryMana
 
 local Debris : Debris = game:GetService("Debris")
 
+local modelCopies : table<unknown> = {}
+for i = 1,game.Players.MaxPlayers do
+	modelCopies[i] = {
+		model = script.PistolMotor:Clone(),
+		taken = false
+	}
+end
+
 local data : table<Player, table<unknown>> = {}
 function weapon:equip(ply : Player)
 	data[ply] = {
@@ -25,14 +33,23 @@ function weapon:equip(ply : Player)
 		timeToTick = tick(),
 	}
 	
-	local pistol : BasePart = script.PistolMotor:Clone()
-	pistol.Parent = ply.Character
+	local chosenModel : BasePart? = nil
+	for i = 1,#modelCopies do
+		if modelCopies[i].taken then continue end
+		chosenModel = modelCopies[i].model
+		modelCopies[i].taken = true
+		break
+	end
 	
-	local m : Motor6D = Instance.new("Motor6D")
-	m.Parent = pistol
-	m.Part0 = ply.Character["Right Arm"]
-	m.Part1 = pistol
-	m.C0 = CFrame.new(Vector3.new(-0.32, -1.162, -0.374)) * CFrame.Angles(0,math.rad(180),math.rad(180))
+	if chosenModel then
+		chosenModel.Parent = ply.Character
+		
+		local m : Motor6D = Instance.new("Motor6D")
+		m.Parent = chosenModel
+		m.Part0 = ply.Character["Right Arm"]
+		m.Part1 = chosenModel
+		m.C0 = CFrame.new(Vector3.new(-0.32, -1.162, -0.374)) * CFrame.Angles(0,math.rad(180),math.rad(180))
+	end
 	
 	data[ply].anims.idle:Play()
 	
@@ -53,10 +70,21 @@ function weapon:equip(ply : Player)
 end
 
 function weapon:unequip(ply : Player)
-	if ply.Character.PistolMotor:FindFirstChild("Motor6D") then
-		ply.Character.PistolMotor.Motor6D:Destroy()
+	if ply.Character:FindFirstChild("PistolMotor") then
+		if ply.Character.PistolMotor:FindFirstChild("Motor6D") then
+			ply.Character.PistolMotor.Motor6D:Destroy()
+		end
+		
+		local model = ply.Character.PistolMotor
+
+		for i = 1,#modelCopies do
+			if not modelCopies[i].taken then continue end
+			modelCopies[i].model = model
+			modelCopies[i].taken = false
+		end
+
+		model.Parent = nil
 	end
-	ply.Character.PistolMotor:Destroy()
 	
 	for _,v in pairs(data[ply].anims) do
 		v:Stop()

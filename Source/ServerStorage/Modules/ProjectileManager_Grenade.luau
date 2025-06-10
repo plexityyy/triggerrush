@@ -50,6 +50,7 @@ function grenade:doExplosion(pos : Vector3)
 	for _,ply in pairs(game.Players:GetPlayers()) do
 		if not ply or not ply.Character then continue end
 		if not ply:GetAttribute("Playing") then continue end
+		if not ply.Character:FindFirstChild("HumanoidRootPart") then continue end
 		if ply.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0 then continue end
 		
 		local dist : number = (ply.Character.PrimaryPart.Position - pos).Magnitude

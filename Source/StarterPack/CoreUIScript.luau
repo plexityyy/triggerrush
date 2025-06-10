@@ -90,3 +90,7 @@ InputService.InputBegan:Connect(function(input : InputObject)
 		Gui.ChatBoxLabel.Text = oldText
 	end
 end)
+
+game:GetService("RunService").RenderStepped:Connect(function(dt : number)
+	Gui.FPSLabel.Text = "FPS : " .. tostring(math.floor(1/dt))
+end)

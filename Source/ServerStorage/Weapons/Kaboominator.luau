@@ -15,6 +15,14 @@ local ProjectileManager = require(game.ServerStorage.Assets.Modules.ProjectileMa
 
 local Debris : Debris = game:GetService("Debris")
 
+local modelCopies : table<unknown> = {}
+for i = 1,game.Players.MaxPlayers do
+	modelCopies[i] = {
+		model = script.Kaboom:Clone(),
+		taken = false
+	}
+end
+
 local data : table<Player, table<any>> = {}
 function weapon:equip(ply : Player)
 	data[ply] = {
@@ -25,14 +33,23 @@ function weapon:equip(ply : Player)
 		timeToTick = tick(),
 	}
 	
-	local kaboominator : BasePart = script.Kaboom:Clone()
-	kaboominator.Parent = ply.Character
+	local chosenModel : BasePart? = nil
+	for i = 1,#modelCopies do
+		if modelCopies[i].taken then continue end
+		chosenModel = modelCopies[i].model
+		modelCopies[i].taken = true
+		break
+	end
 	
-	local m : Motor6D = Instance.new("Motor6D")
-	m.Parent = kaboominator
-	m.Part0 = ply.Character["Right Arm"]
-	m.Part1 = kaboominator
-	m.C1 = CFrame.new(Vector3.new(0.3, -0.8, 2.2)) * CFrame.Angles(math.rad(90),0,0)
+	if chosenModel then
+		chosenModel.Parent = ply.Character
+		
+		local m : Motor6D = Instance.new("Motor6D")
+		m.Parent = chosenModel
+		m.Part0 = ply.Character["Right Arm"]
+		m.Part1 = chosenModel
+		m.C1 = CFrame.new(Vector3.new(0.3, -0.8, 1.4)) * CFrame.Angles(math.rad(90),0,0)
+	end
 	
 	data[ply].anims.idle:Play()
 	
@@ -53,10 +70,21 @@ function weapon:equip(ply : Player)
 end
 
 function weapon:unequip(ply : Player)
-	if ply.Character.Kaboom:FindFirstChild("Motor6D") then
-		ply.Character.Kaboom.Motor6D:Destroy()
+	if ply.Character:FindFirstChild("Kaboom") then
+		if ply.Character.Kaboom:FindFirstChild("Motor6D") then
+			ply.Character.Kaboom.Motor6D:Destroy()
+		end
+		
+		local model = ply.Character.Kaboom
+
+		for i = 1,#modelCopies do
+			if not modelCopies[i].taken then continue end
+			modelCopies[i].model = model
+			modelCopies[i].taken = false
+		end
+
+		model.Parent = nil
 	end
-	ply.Character.Kaboom:Destroy()
 	
 	for _,v in pairs(data[ply].anims) do
 		v:Stop()

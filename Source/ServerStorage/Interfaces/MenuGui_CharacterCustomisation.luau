@@ -41,7 +41,7 @@ end)
 -- gender
 rootMenu.Selection.Frame.TabsFrame.Frame.GenderButton.MouseButton1Click:Connect(function()
 	if ply:GetAttribute("CharacterGender") == "Male" then
-		rootMenu.Selection.Frame.TabsFrame.Frame.GenderButton.Text = "Bettybloxxer (Female)..."
+		rootMenu.Selection.Frame.TabsFrame.Frame.GenderButton.Text = "Betty-Bloxxer (Female)..."
 		rootMenu.Selection.Frame.TabsFrame.Frame.GenderButton.TextColor3 = Color3.fromRGB(247, 131, 255)
 		
 		local m : CharacterMesh = script.FemaleMesh:Clone()
@@ -49,7 +49,7 @@ rootMenu.Selection.Frame.TabsFrame.Frame.GenderButton.MouseButton1Click:Connect(
 		
 		game.ReplicatedStorage.Remotes.ChangeCharacter:FireServer("gender","female")
 	else
-		rootMenu.Selection.Frame.TabsFrame.Frame.GenderButton.Text = "Billybloxxer (Male)..."
+		rootMenu.Selection.Frame.TabsFrame.Frame.GenderButton.Text = "Billy-/Bexy-Bloxxer (Male/Neutral)..."
 		rootMenu.Selection.Frame.TabsFrame.Frame.GenderButton.TextColor3 = Color3.fromRGB(0, 170, 255)
 		
 		if rig:FindFirstChild("FemaleMesh") then

@@ -9,6 +9,14 @@ local InventoryManager = require(game.ServerStorage.Assets.Modules.InventoryMana
 
 local Debris : Debris = game:GetService("Debris")
 
+local modelCopies : table<unknown> = {}
+for i = 1,game.Players.MaxPlayers do
+	modelCopies[i] = {
+		model = script.GunHandle:Clone(),
+		taken = false
+	}
+end
+
 local gunIdleAnimation : Animation = Instance.new("Animation")
 local gunFireAnimation : Animation = Instance.new("Animation")
 
@@ -25,14 +33,23 @@ function weapon:equip(ply : Player)
 		timeToTick = tick()-0.3,
 	}
 	
-	local shotgunModel : Model = script.GunHandle:Clone()
-	shotgunModel.Parent = ply.Character
+	local chosenModel : BasePart? = nil
+	for i = 1,#modelCopies do
+		if modelCopies[i].taken then continue end
+		chosenModel = modelCopies[i].model
+		modelCopies[i].taken = true
+		break
+	end
 	
-	local sModel : Motor6D = Instance.new("Motor6D")
-	sModel.Name = "ShotugnMotor"
-	sModel.Parent = ply.Character["Right Arm"]
-	sModel.Part0 = ply.Character["Right Arm"]
-	sModel.Part1 = shotgunModel.Base
+	if chosenModel then
+		chosenModel.Parent = ply.Character
+		
+		local sModel : Motor6D = Instance.new("Motor6D")
+		sModel.Name = "ShotugnMotor" -- "shotugn" lol
+		sModel.Parent = ply.Character["Right Arm"]
+		sModel.Part0 = ply.Character["Right Arm"]
+		sModel.Part1 = chosenModel.Base
+	end
 	
 	data[ply].anims.idle:Play()
 	
@@ -56,7 +73,17 @@ function weapon:unequip(ply : Player)
 	if ply.Character["Right Arm"]:FindFirstChild("ShotugnMotor") then
 		ply.Character["Right Arm"].ShotugnMotor:Destroy()
 	end
-	ply.Character.GunHandle:Destroy()
+	if ply.Character:FindFirstChild("GunHandle") then
+		local model = ply.Character.GunHandle
+
+		for i = 1,#modelCopies do
+			if not modelCopies[i].taken then continue end
+			modelCopies[i].model = model
+			modelCopies[i].taken = false
+		end
+
+		model.Parent = nil
+	end
 	
 	for _,v in pairs(data[ply].anims) do
 		v:Stop()

@@ -15,6 +15,14 @@ local gunFireAnimation : Animation = Instance.new("Animation")
 gunIdleAnimation.AnimationId = "http://www.roblox.com/Asset?ID=95389685"
 gunFireAnimation.AnimationId = "http://www.roblox.com/Asset?ID=95390146"
 
+local modelCopies : table<unknown> = {}
+for i = 1,game.Players.MaxPlayers do
+	modelCopies[i] = {
+		model = script.StenGun:Clone(),
+		taken = false
+	}
+end
+
 local data : table<Player, table<unknown>> = {}
 function weapon:equip(ply : Player)
 	data[ply] = {
@@ -25,15 +33,24 @@ function weapon:equip(ply : Player)
 		timeToTick = tick()+0.8,
 	}
 	
-	local stenModel : Part = script.StenGun:Clone()
-	stenModel.Parent = ply.Character
+	local chosenModel : BasePart? = nil
+	for i = 1,#modelCopies do
+		if modelCopies[i].taken then continue end
+		chosenModel = modelCopies[i].model
+		modelCopies[i].taken = true
+		break
+	end
 	
-	local motor : Motor6D = Instance.new("Motor6D")
-	motor.Name = "StenMotor"
-	motor.Parent = ply.Character["Right Arm"]
-	motor.Part0 = ply.Character["Right Arm"]
-	motor.Part1 = stenModel
-	motor.C1 = CFrame.new(0.2,-0.5,0.9) * CFrame.Angles(math.rad(90),0,0)
+	if chosenModel then
+		chosenModel.Parent = ply.Character
+		
+		local motor : Motor6D = Instance.new("Motor6D")
+		motor.Name = "StenMotor"
+		motor.Parent = ply.Character["Right Arm"]
+		motor.Part0 = ply.Character["Right Arm"]
+		motor.Part1 = chosenModel
+		motor.C1 = CFrame.new(0.2,-0.5,0.9) * CFrame.Angles(math.rad(90),0,0)
+	end
 	
 	data[ply].anims.idle:Play()
 	
@@ -57,7 +74,17 @@ function weapon:unequip(ply : Player)
 	if ply.Character["Right Arm"]:FindFirstChild("StenMotor") then
 		ply.Character["Right Arm"].StenMotor:Destroy()
 	end
-	ply.Character.StenGun:Destroy()
+	if ply.Character:FindFirstChild("StenGun") then
+		local model = ply.Character.StenGun
+
+		for i = 1,#modelCopies do
+			if not modelCopies[i].taken then continue end
+			modelCopies[i].model = model
+			modelCopies[i].taken = false
+		end
+
+		model.Parent = nil
+	end
 	
 	for _,v in pairs(data[ply].anims) do
 		v:Stop()

@@ -9,6 +9,7 @@ game:GetService("RunService").Heartbeat:Connect(function(dt : number)
 		for _,part in pairs(touchingParts) do
 			local ply : Player = game.Players:GetPlayerFromCharacter(part.Parent) or game.Players:GetPlayerFromCharacter(part.Parent.Parent)
 			if not ply then continue end
+			script.Parent.SpawnPoint.Value.Item.Value = nil
 			
 			game.ReplicatedStorage.Remotes.PlaySoundAsPart:FireAllClients(script.Parent.PrimaryPart.Position,"rbxassetid://17356010927",function(sound : Sound)
 				sound.Volume = 0.2
