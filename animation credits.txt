@@ -1,0 +1,11 @@
+Animation credits.
+Know that this list may not be complete.
+
+CRIMINALITY (maybe?)
+    - Knife player animations
+ROLVe
+    - Knife viewmodel animations
+ROBLOX
+    - Sten Gun player animations
+ToasterWaaffle
+    - Trench Shotgun player animations
