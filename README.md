@@ -1,7 +1,7 @@
 # TriggerRush
 A super basic arena FPS. Made in [Roblox](https://www.roblox.com/games/120574415654510/TriggerRush).
 
-![Screenshot of TriggerRush.][screenshot.png]
+![Screenshot of TriggerRush.](screenshot.png)
 
 ## Weaponry
 Players spawn with all weapons in-game, including;
