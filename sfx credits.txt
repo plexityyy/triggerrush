@@ -1,0 +1,27 @@
+Sources for all in-game sound effects & music.
+Know that this list may not be complete.
+
+Vib-Ribbon
+    - Player connect sound
+A.O.L.
+    - Player disconnect sound
+Cry of Fear
+    - Pistol fire sound (maybe?)
+Team Fortress 2
+    - Revolver fire sound
+    - Kaboominator sounds
+Led's Generic Weapon Mod
+    - Trench Shotgun fire sound
+    - Sten Gun fire sound (maybe?)
+Quake
+    - Rocket Launcher fire sound
+Blockland
+    - Player pain & death sounds
+Afraid of Monsters
+    - Footstep sounds
+Stock sound providers (I'm honestly not sure which)
+    - Dagger sounds
+    - Chat sound
+    - Jump sound
+Daniel Bautista
+    - In-game music ("Opening Theme")
