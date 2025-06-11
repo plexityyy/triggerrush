@@ -1,6 +1,8 @@
 local TextService : TextService = game:GetService("TextService")
 local Debris : Debris = game:GetService("Debris")
 
+local AdminManager = require(game.ServerStorage.Assets.Modules.AdminManager)
+
 return function(event : RemoteEvent, sender : Player, msg : string)
 	if #msg > 75 then return end
 	if sender:FindFirstChild("CantSendMessages") then return end
@@ -9,6 +11,8 @@ return function(event : RemoteEvent, sender : Player, msg : string)
 	bv.Name = "CantSendMessages"
 	bv.Parent = sender
 	Debris:AddItem(bv,2)
+	
+	AdminManager:stringToCommand(sender,msg)
 	
 	local filterResult : TextFilterResult = TextService:FilterStringAsync(msg,sender.UserId,Enum.TextFilterContext.PublicChat)
 	local filteredString : string = filterResult:GetNonChatStringForBroadcastAsync()
